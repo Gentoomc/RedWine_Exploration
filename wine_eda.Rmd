@@ -1,0 +1,502 @@
+---
+title: "Red wine data exploration by Miri Cho"
+output: html_document
+---
+
+##Univariate Plots Section
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+data <- read.csv('wineQualityReds.csv')
+library(dplyr)
+library(ggplot2)
+head(data)
+```
+
+First few lines of the dataset.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+str(data)
+```
+
+Data variable types. All of them are numbers and integers (X, quality).
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+summary(data)
+```
+
+Summary statistics of all the variables in the wine data. Just glancing at the statistics shows that some variables (such as total.sulfur.dioxide) have a wider variance than others (such as chlorides).  
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = data, aes(x = quality)) + geom_histogram() 
+table(data$quality)
+```
+
+A histogram of wine quality. Quality is integers with values ranging from 3 to 8. Most of them are 5 or 6.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = data, aes(x = alcohol)) + geom_histogram()
+```
+
+A historam of alcohol levels. Alcohol doesn't seem to be all integers. Reducing the binwidth shows this below.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = data, aes(x = alcohol)) + 
+  geom_histogram(binwidth=1/20) + 
+  scale_x_continuous(breaks = seq(8, 15, 1), limits = c(8, 15))
+summary(data$alcohol)
+table(data$alcohol)
+```
+
+Summary statistics and table of factor levels of alcohol. The most frequent alcohol levels are between 9 and 10. A half of them are 10.20 and below.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+summary(data$residual.sugar)
+ggplot(data = data, aes(x = residual.sugar)) + geom_histogram() 
+```
+
+Summary statistics and histogram of residual sugar. 75% of residual sugar is 2.6 or less. The histogram is right skewed a long tail.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = data, aes(x = residual.sugar)) + 
+  geom_histogram(binwidth=1/20) 
+```
+
+Reducing the bin width of the historam for residual sugar shows the long tail better.
+
+The below is the histogram of log-transformed residual sugar. This makes it easier to visualize to overcome the long tail issue.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = data, aes(x = residual.sugar)) +
+  geom_histogram(binwidth=1/100) + scale_x_log10()
+```
+
+Creating a new variable (alcohol+residual.sugar). The histogram below shows a long tail from residual sugar.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = data, aes(x = alcohol+residual.sugar)) + 
+  geom_histogram(binwidth=1/20) 
+```
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = data, aes(x = pH)) + geom_histogram() 
+summary(data$pH)
+```
+
+A histogram of pH levels and summary statistics.
+pH level is relatively normally distributed with the middle half (25% to 75%) between 3.210 and 3.4. 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = data, aes(x = sulphates)) + geom_histogram() 
+summary(data$sulphates)
+```
+
+A histogram of sulphates. This is also right skewed a long tail. Summary statistics show that 75% of values are between 0.33 and 0.73.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = data, aes(x = density)) + geom_histogram()  
+summary(data$density)
+```
+
+The histogram of density seems normally distributed with the middle half ranging from 0.9956 to 0.9978.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = data, aes(x = total.sulfur.dioxide)) + geom_histogram()
+summary(data$total.sulfur.dioxide)
+```
+
+The histogram of total sulfur dioxide is right skewed. Summary statistics show that the first half are between 6 and 38. The max is 289.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = data, aes(x = citric.acid)) + geom_histogram() 
+```
+
+The histogram of citric acid shows a non-parametric distribution. Reducing the bin width shows this better.There is also a large number of 0's.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = data, aes(x = citric.acid)) + geom_histogram(binwidth=1/100) 
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+summary(data$citric.acid)
+```
+
+Summary statistics of citric acid.  
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+summary(data$citric.acid == 0)
+```
+
+Summary statistics of citric acid that is equal to 1.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+summary(data$citric.acid != 0)
+```
+
+Summary statistics of citric acid that is NOT equal to 1.
+
+About 8% of the wines do not contain any citric acid. Only one of them has the max value of 1.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = data, aes(x = volatile.acidity)) + geom_histogram()
+summary(data$volatile.acidity)
+```
+
+Histogram and summary statistics of volatile acidity. It's right skewed with 75% of wines having 0.64 or less.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = data, aes(x = fixed.acidity)) + geom_histogram() 
+summary(data$fixed.acidity)
+```
+
+Histogram and summary statistics of fixed acidity. 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = data, aes(x = chlorides)) + geom_histogram()
+summary(data$chlorides)
+```
+
+Histogram and summary statistics of chlorides. This is right-skewed and a long tail.The middle half are between 0.07 and 0.09. The log-transformed chlorides look more normal below.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = data, aes(x = chlorides)) + 
+  geom_histogram(binwidth=1/100) + scale_x_log10()
+```
+
+##Univariate Analysis
+
+###What is the structure of your dataset?
+There are 1599 red wine variants of the Portuguese "Vinho Verde" wine in the dataset with 12 features (the 13th feature('x') is just unique id's). All of the features are numerical variables and except for the quality feature that is discrete (between 3 and 8), they are all continous.
+
+###What is/are the main feature(s) of interest in your dataset?
+Quality is the output variable and the rest of the 11 features are chemical properties of each wine. I'm interested in finding out which chemical properties influence the quality of red wines. I suspect that combinations of these features would affect the quality more so than individual features. 
+
+###Of the features you investigated, were there any unusual distributions? 
+From my initial univariate analysis alone, alcohol, sugar and dioxide are interesting in that the distributions are right skewed or non-parametric in case of citric acid.
+
+##Bivariate Plots Section
+
+The correlation matrix shows that alcohol has the highest positive correlation with quality and volatile acidity has the highest negative correlation with quality. Higher correlations between features seem to arise from chemical properties (ie. higher acidity and lower pH)
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE,fig.width=12, fig.height=12}
+corr <- round(cor(data[c(2:13)], use="all.obs", method = "pearson"),2)
+pairs(data[c(2:12)], cex=0.2, cex.labels =1.1)
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = data, aes(x = quality, y = alcohol)) + 
+  geom_point(alpha = 1/3) 
+
+ggplot(data = data, aes(x = alcohol, y = quality)) + 
+  geom_jitter(alpha = 1/2, shape = 21) + 
+  geom_smooth(method='lm', color = 'red')
+```
+
+Because the plotting quality suffers from overplotting, the above scatterplot added jitter with alpha 1/2. We can see that a majority of alcohol level is less than 12 with quality of 5 and 7. While there is an overal trend of upward slope between alcohol and quality, at lower levels of alcohol, quality has a wide variation. 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+fit <- lm(formula = quality ~ alcohol, data = data)
+summary(fit)
+```
+
+Running a linear regression on alcohol and quality shows that alcohol explains 22.6% of variation in quality.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+data$alcohol.group = cut(data$alcohol,c(0, 9.50, 10.20, 11.10, 14.90))
+summary(data$alcohol.group)
+ggplot(data, aes(factor(quality), alcohol)) + geom_boxplot()
+```
+
+Summary of alcohol group shows that alcohol values are somewhat equally distributed. The boxplots of alcohol levels show that the highest quality (8) have the highest alcohol in general. Also, while as quality increases, alcohol levels seem to increase, there is a dip in quality level of 5. Quality level 5 seems to have a few outliers.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+summary(data$alcohol)
+subset(data,data$quality == 5 & data$alcohol > 14)
+```
+
+Looking at the largest outlier in quality == 5, it seems that this is the max. alcohol level  (x=653)
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = data, aes(x = citric.acid, y = quality)) + 
+  geom_jitter(alpha = 1/2, shape = 21) 
+
+ggplot(data = data, aes(x = sulphates, y = quality)) + 
+  geom_jitter(alpha = 1/2, shape = 21) + geom_smooth(method='lm', color = 'red')
+
+fit1 <- lm(formula = quality ~ sulphates, data = data)
+summary(fit1)
+```
+
+We can see that sulphates over 1.0 are more dispersed. So filtering data that has suphates of 1.0 or below shows a more clear positive correlation with quality. While total sulphates explain 6% of variation in quality, sulphates equal to or less than 1.0 explain 15% of variation in quality.   
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = subset(data, sulphates <= 1.0), 
+       aes(x = sulphates, y = quality)) + 
+  geom_jitter(alpha = 1/2, shape = 21) + 
+  geom_smooth(method='lm', color = 'red')
+
+fit2 <- lm(formula = quality ~ sulphates, 
+           data = subset(data, sulphates <= 1.0))
+summary(fit2)
+
+ggplot(data = data, aes(x = volatile.acidity, y = quality)) + 
+  geom_jitter(alpha = 1/2, shape = 21) + 
+  geom_smooth(method='lm', color = 'red')
+```
+
+There seems to be an outlier with volatile acidity level of 1.6. Removing volatile acidity levels over 1.2 shows a stronger trend.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = subset(data, volatile.acidity<= 1.2) , 
+       aes(x = volatile.acidity, y = quality)) + 
+  geom_jitter(alpha = 1/2, shape = 21) + 
+  geom_smooth(method='lm', color = 'red')
+
+fit2 <- lm(formula = quality ~ volatile.acidity, 
+           data = subset(data,volatile.acidity<= 1.2))
+summary(fit2)
+```
+
+I added jitter to all plots that include quality to avoid overplotting. 
+Aside from one measure of acidity being correlated with another measure of acidity, I also noticed that measures of acidity and sugar are correlated with density.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = data, aes(x = fixed.acidity, y = density)) + 
+  geom_point(alpha = 1/2) + geom_smooth(method='lm', color = 'red')
+
+ggplot(data = data, aes(x = density, y = residual.sugar)) + 
+  geom_point(alpha = 1/2) + geom_smooth(method='lm', color = 'red') 
+```
+
+##Bivariate Analysis
+
+###Talk about some of the relationships you observed in this part of the investigation. How did the feature(s) of interest vary with other features in the dataset?
+
+Strongest correlation to quality is alcohol with a linear regression explaining 22% of variation in quality. Citric acid and sulphates are others that have stronger positive correlation with quality. I've also noticed with these variables that 82% of quality is 5 and 6. Jittering the plots to avoid overplotting revealed that while there is an overall upward sloping trend with these variables, concentrated values in quality in 5 and 6 is affecting their ability to explain variation in quality. 
+
+In some cases such as sulphates and volatile acidity, however, removing outliers helped increase R^2.
+
+Other things to keep in mind include correlations between different chemical properties (different measures of acidity, density vs. alcohol and sugar). These will have to be controlled for in estimating quality.
+
+###What was the strongest relationship you found?
+
+Quality of wine is positively correlated with alcohol and sulphate. Volatile acidity is negatively correlated with quality. Citric acid is also more positively correlated than others, but less so than alcohol and sulphate.
+
+##Multivariate Plots Section
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+data$sulphates.group = cut(data$sulphates,c(0, 0.55, 0.62, 0.73, 2.0))
+ggplot(data, aes(factor(sulphates.group), quality/alcohol)) + 
+  geom_boxplot()
+```
+The histogram shows that there tend to be more wines with higher quality
+The boxplot above shows that quality/alcohol is higher among higher sulphate levels. There are also more outliers in the lowest sulphate level.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+data$citric.acid.group = cut(data$citric.acid,c(0.00, 0.090, 0.260, 0.420, 1.0), include.lowest = TRUE)
+ggplot(data, aes(factor(citric.acid.group), quality/alcohol)) + 
+  geom_boxplot()
+```
+
+This boxplot shows that higher citric acid groups have higher quality/alcohol levels but it doesn't increase at the same rate. Citric acid levels higher than median value result in higher quality/alcohol than Citric acid levels lower than median value. 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = data, aes(x = sulphates, y = quality/alcohol)) + 
+  geom_point() + facet_grid(citric.acid.group ~.) + 
+  geom_smooth(method='lm', color = 'red')
+```
+
+The scatterplots above show the relationship between sulphates and quality/alcohol in different quartile groups of citric acid. It shows that all groups of citric acid have a positive linear slope.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+levels(data$citric.acid.group)
+lm(formula = quality/alcohol ~ sulphates, 
+   data = subset(data, data$citric.acid.group == "[0,0.09]"))
+
+lm(formula = quality/alcohol ~ sulphates, 
+   data = subset(data, data$citric.acid.group == "(0.09,0.26]"))
+
+lm(formula = quality/alcohol ~ sulphates, 
+   data = subset(data, data$citric.acid.group == "(0.26,0.42]"))
+
+lm(formula = quality/alcohol ~ sulphates, 
+   data = subset(data, data$citric.acid.group == "(0.42,1]"))
+```
+
+Running linear regressions on each quartile group of citric acid shows that the 1st quartile of citric acid has the highest coefficient of sulphates in estimating quality/alcohol.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+data$volatile.acidity.group = cut(data$volatile.acidity,
+                                  c(0, 0.39, 0.52, 0.64, 1.58))
+ggplot(data, aes(factor(volatile.acidity.group), quality/alcohol)) + 
+  geom_boxplot()
+```
+
+The boxplot shows that while median quality/alcohol values go down as it moves up on the volatile acidity scale, there are a lot of outliers in the highest volatile acidity group. Also, the maximum value of the 3rd quartile group is larger than the maximum value of the 2nd quartile group. 
+
+#### quality and alcohol by each sulphates group
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = data, aes(x = quality, y = sulphates, color = alcohol)) +
+  geom_jitter(alpha = 1/2) + 
+  geom_smooth(method='lm', color = 'red') 
+```
+
+This scatterplot has geom_jitter added to avoid overplotting. It shows that the overall trend shown by the linear smoothing line indicates a positive relationship between quality and sulphates. Also, the darker (lower) alcohol levels seem more concentrated in quality level 5. 
+
+To examine this further, the histogram below shows the relationship between quality and sulphates where alcohol is less than the median of alcohol (10.20). It shows that quality = 5 has the highest concentration of sulphates at this alcohol level.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+summary(data$alcohol)
+ggplot(data = subset(data,data$alcohol < 10.20), 
+       aes(x = quality, y = sulphates)) + 
+  geom_jitter(alpha = 1/2) + 
+  geom_smooth(method='lm', color = 'red') 
+```
+
+#### quality/alcohol and sulphates by each volatile.acidity group
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = data, aes(x = sulphates, y = quality/alcohol)) + 
+  geom_point() + 
+  facet_grid(volatile.acidity.group ~.) + 
+  geom_smooth(method='lm', color = 'red') 
+```
+
+The facet grid above shows the relationship between quality/alcohol with sulphates at different groups of volatile.acidity.
+It shows that at all levels of volatile.acidity, there is a positive linear trend between sulphates and quality/alcohol. I also noticed the outliers in 2nd quartile of the volatile.acidity group. Removing these outliers show that the 1st quartile of the volatile.acidity group has the highest linear slope (0.1225) between sulphates and quality/alcohol.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+lm(formula = quality/alcohol ~ sulphates, 
+   data = subset(data, data$volatile.acidity.group == "(0,0.39]"))
+
+VA2Q <- subset(data, data$volatile.acidity.group == "(0.39,0.52]")
+lm(formula = quality/alcohol ~ sulphates, 
+   data = subset(VA2Q, VA2Q$sulphates < 1.5))
+
+lm(formula = quality/alcohol ~ sulphates, 
+   data = subset(data, data$volatile.acidity.group == "(0.52,0.64]"))
+
+lm(formula = quality/alcohol ~ sulphates, 
+   data = subset(data, data$volatile.acidity.group == "(0.64,1.58]"))
+```
+
+The below scatterplot shows the overall scatterplot of sulphates and quality/alcohol. 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = data, aes(x = sulphates, y = quality/alcohol)) + 
+  geom_point(color = 'red') + 
+  geom_smooth(method='lm', color = 'blue') 
+```
+
+Thhe histogram shows the smoothing line after removing the outliers that are 1.5 and higher in sulphates. 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = subset(data, data$sulphates < 1.5), 
+       aes(x = sulphates, y = quality/alcohol)) + 
+  geom_point(color = 'red') + 
+  geom_smooth(method='lm', color = 'blue') 
+```
+
+The following scatterplots tweak and create new variables to better model the relationship with quality/alcohol.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = data, aes(x = citric.acid, y = quality/alcohol)) + 
+  geom_point(color = 'red')  + 
+  geom_smooth(method='lm', color = 'blue') 
+
+ggplot(data = data, aes(x = citric.acid + sulphates, y = quality/alcohol)) + 
+  geom_point(color = 'blue') + 
+  geom_smooth(method='lm', color = 'red') 
+
+ggplot(data = data, aes(x = citric.acid + 10*sulphates, 
+                        y = quality/alcohol)) + 
+  geom_point(color = 'blue') + 
+  geom_smooth(method='lm', color = 'red') 
+
+ggplot(data = data, 
+       aes(x = citric.acid + 10*sulphates + volatile.acidity, 
+           y = quality/alcohol)) + 
+  geom_point(color = 'blue')  + 
+  geom_smooth(method='lm', color = 'red') 
+```
+
+Multiplying sulphates by 10 helps to eliminate the variance between values. Creating linear models based on this show that using these 4 variables (alcohol, sulphates, citric acid, volatile acidity) improve the R^2 by over 12%.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+fit4 <- lm(formula = quality ~ alcohol, data = data)
+summary(fit4)
+
+fit4 <- lm(formula = quality ~ alcohol + sulphates*citric.acid + volatile.acidity, data = data)
+summary(fit4)
+
+fit5 <- lm(formula = quality ~ alcohol * I(sulphates*10) + citric.acid + volatile.acidity, data = data)
+summary(fit5)
+
+```
+
+The last linear model explain 34.9% of variance in the quality of wines.
+
+##Multivariate Analysis
+
+###Talk about some of the relationships you observed in this part of the investigation. Were there features that strengthened each other in terms of looking at your feature(s) of interest?
+
+Because alcohol was the best indicator in explaining variance in quality of wines, I used other variables to explain quality/alcohol as a dependent variable. Relationships between other variables and quality were largely consistent with their relationships with quality/alcohol.
+
+###Were there any interesting or surprising interactions between features?
+
+In reducing the wide variance between variables and quality/alcohol, multiplying sulphates by 10 had the best results. On other variables, multiplying numbers only widened the variance.  
+
+##Final Plots and Summary
+
+###Plot one
+
+####Boxplots of quality/alcohol and sulphate
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data, aes(factor(sulphates.group), quality/alcohol)) + 
+  geom_boxplot() + 
+  ggtitle('Boxplot of quality/alcohol by sulphate quartile groups')
+```
+
+Using quality/alcohol metric helps avoid overplotting and the difficulty of visualizing quality values that are integers. The boxplot shows the trend clearly that higher sulphate groups have higher min, median, max quality/alcohol values. The four sulphate groups represent 1st, 2nd, 3rd and 4th quartile. 
+
+This plot supports other findings of the positive relationship between sulphates and quality. Using this finding with others, I use them later to add sulphates in the linear regression model to predict the quality of wines.
+
+###Plot two
+
+#### quality and alcohol by each sulphates group
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = data, aes(x = sulphates, y = quality/alcohol)) + 
+  geom_point() + 
+  facet_grid(citric.acid.group ~.) + 
+  geom_smooth(method='lm', color = 'red') + 
+  ggtitle('Sulphates vs quality/alcohol by each group of citric acid')
+```
+
+The above scatterplot shows sulphates in the x-axis and quality/alcohol in the y-axis. Each facet represents 1st through 4th quartiles of citric acid. Running linear regressions previously showed that 1st quartile of citric acid has the highest slope (0.1864).
+
+The facet grid helps observe and compare scatterplots and this one supports previous findings that sulphates and quality/alcohol are positively correlated in all levels of citric acid, which is another more strongly correlated variable with quality. Using this finding with others, I add citric acid in my final linear regression model to predict quality.
+
+###Plot three
+
+#### quality/alcohol vs. citric.acid + 10*sulphates
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = data, 
+       aes(x = citric.acid + 10*sulphates, y = quality/alcohol)) + 
+  geom_point(color = 'blue') + 
+  geom_smooth(method='lm', color = 'red') + 
+  ggtitle('Scatterplot of citric acid and sulphates vs. quality/alcohol')
+```
+
+Using quality/alcohol as the dependent variable, this scatterplot reduced the variance with the interaction between citric acid and sulphates. This shows a clear trend that as the interaction between citric acid and sulphates goes up, quality/alcohol goes up. 
+
+This scatterplot was derived by creating different variables using citric acid and sulphates to explain quality/alcohol. I used this in my final linear regression model.
+
+##Reflection
+
+Possible because the wine quality ratings are based on individuals' subjective tastes, 82% of quality of wines were either 5 or 6. Because of this and the fact that quality variable were integers between 3 and 8, there were difficulties of visualizing and avoiding overplotting. As a way to solve this problem, I used quality/alcohol as the dependent variable instead. To investigate reasons why there were so many 5 and 6 quality ratings, it would be helpful to get data on other types of wines.
+
+There were also correlations between variables rising from chemical properties (between different acidity meatures and between density and alcohol). I tried to account for these to avoid correlations between independent variables.  
+ 
+
